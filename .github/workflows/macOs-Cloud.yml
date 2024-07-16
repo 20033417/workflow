@@ -47,15 +47,6 @@ jobs:
           echo "VNC_PORT=${VNC_PORT}" >> $GITHUB_ENV
           echo "PASSWORD=${PASSWORD}" >> $GITHUB_ENV
 
-      - name: Display Connection Info
-        run: |
-          echo "Connect to the macOS machine via SSH using:"
-          echo "ssh -p ${{ env.SSH_PORT }} davide@${{ env.SSH_IP }}"
-          echo "Password: ${{ env.PASSWORD }}"
-          echo ""
-          echo "Connect to the macOS machine via VNC using:"
-          echo "vnc://davide:${{ env.PASSWORD }}@${{ env.VNC_IP }}:${{ env.VNC_PORT }}"
-
       - name: Save connection info to file
         run: |
           echo "SSH IP Address: ${{ env.SSH_IP }}" > connection_info.txt
@@ -64,12 +55,9 @@ jobs:
           echo "VNC Port: ${{ env.VNC_PORT }}" >> connection_info.txt
           echo "Username: davide" >> connection_info.txt
           echo "Password: ${{ env.PASSWORD }}" >> connection_info.txt
-        env:
-          SSH_IP: ${{ env.SSH_IP }}
-          SSH_PORT: ${{ env.SSH_PORT }}
-          VNC_IP: ${{ env.VNC_IP }}
-          VNC_PORT: ${{ env.VNC_PORT }}
-          PASSWORD: ${{ env.PASSWORD }}
+
+      - name: Display Connection Info
+        run: cat connection_info.txt
 
       - name: Upload connection info
         uses: actions/upload-artifact@v3
