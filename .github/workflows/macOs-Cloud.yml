@@ -30,3 +30,11 @@ jobs:
           unzip ngrok.zip
           ./ngrok authtoken ${{ secrets.NGR_AUTH_TOKEN }}
           ./ngrok http 80
+
+      # Update Ngrok to the latest version
+      - name: Update Ngrok
+        run: |
+          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok-stable-darwin-amd64.zip -o ngrok.zip
+          unzip -o ngrok.zip
+          ./ngrok authtoken ${{ secrets.NGR_AUTH_TOKEN }}
+          ./ngrok http 80
