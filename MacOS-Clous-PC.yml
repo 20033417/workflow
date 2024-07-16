@@ -2,7 +2,6 @@ stages:
   - fetch_token
   - setup_ngrok
 
-# Stage per prelevare il token Ngrok
 fetch_token:
   stage: fetch_token
   image: alpine:latest
@@ -14,7 +13,6 @@ fetch_token:
     reports:
       dotenv: .env
 
-# Stage per configurare e avviare Ngrok
 setup_ngrok:
   stage: setup_ngrok
   image: ngrok/ngrok:latest
