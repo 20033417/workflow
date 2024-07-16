@@ -20,7 +20,6 @@ jobs:
           curl -s https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-darwin-amd64.zip -o ngrok.zip
           unzip ngrok.zip
           ./ngrok config add-authtoken ${{ secrets.NGR_AUTH_TOKEN }}
-          ./ngrok tcp 22 &
           ./ngrok tcp 5900 &
 
       - name: Wait for Ngrok to start
@@ -29,35 +28,35 @@ jobs:
       - name: Get Ngrok public URLs
         id: ngrok
         run: |
-          SSH_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.config.addr == "tcp://0.tcp.ngrok.io:22").public_url')
           VNC_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[] | select(.config.addr == "tcp://0.tcp.ngrok.io:5900").public_url')
-          echo "SSH_URL=${SSH_URL}" >> $GITHUB_ENV
           echo "VNC_URL=${VNC_URL}" >> $GITHUB_ENV
 
-      - name: Retrieve SSH and VNC IPs and passwords
+      - name: Retrieve VNC IP and password
         run: |
-          SSH_IP=$(echo $SSH_URL | sed 's/tcp:\/\///' | cut -d: -f1)
-          SSH_PORT=$(echo $SSH_URL | sed 's/tcp:\/\///' | cut -d: -f2)
           VNC_IP=$(echo $VNC_URL | sed 's/tcp:\/\///' | cut -d: -f1)
           VNC_PORT=$(echo $VNC_URL | sed 's/tcp:\/\///' | cut -d: -f2)
           PASSWORD=$(openssl rand -base64 12)
-          echo "SSH_IP=${SSH_IP}" >> $GITHUB_ENV
-          echo "SSH_PORT=${SSH_PORT}" >> $GITHUB_ENV
           echo "VNC_IP=${VNC_IP}" >> $GITHUB_ENV
           echo "VNC_PORT=${VNC_PORT}" >> $GITHUB_ENV
           echo "PASSWORD=${PASSWORD}" >> $GITHUB_ENV
 
+      - name: Enable Remote Management (VNC) on macOS
+        run: |
+          sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -on -clientopts -setvnclegacy -vnclegacy yes -setvncpw -vncpw ${PASSWORD} -restart -agent -privs -all
+
+      - name: Display Connection Info
+        run: |
+          echo "MacOS system running with Remote Management (VNC) enabled."
+          echo ""
+          echo "Connect to the macOS machine via VNC using:"
+          echo "vnc://davide:${PASSWORD}@${VNC_IP}:${VNC_PORT}"
+
       - name: Save connection info to file
         run: |
-          echo "SSH IP Address: ${{ env.SSH_IP }}" > connection_info.txt
-          echo "SSH Port: ${{ env.SSH_PORT }}" >> connection_info.txt
-          echo "VNC IP Address: ${{ env.VNC_IP }}" >> connection_info.txt
+          echo "VNC IP Address: ${{ env.VNC_IP }}" > connection_info.txt
           echo "VNC Port: ${{ env.VNC_PORT }}" >> connection_info.txt
           echo "Username: davide" >> connection_info.txt
           echo "Password: ${{ env.PASSWORD }}" >> connection_info.txt
-
-      - name: Display Connection Info
-        run: cat connection_info.txt
 
       - name: Upload connection info
         uses: actions/upload-artifact@v3
