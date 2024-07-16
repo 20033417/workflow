@@ -23,19 +23,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Fetch Ngrok token from a private repository
-      - name: Fetch Ngrok token
-        run: |
-          git clone https://20033417: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@github.com/20033417/workflowgit
-          export NGR_AUTH_TOKEN=$(cat <repository>/ngrok_token.txt)
-        env:
-          # Ensure the access token is available in the environment
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Set up Ngrok with the fetched token
+      # Set up Ngrok with the token from secrets
       - name: Setup Ngrok
         run: |
           curl -s https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-darwin-amd64.zip -o ngrok.zip
           unzip ngrok.zip
-          ./ngrok authtoken $NGR_AUTH_TOKEN
+          ./ngrok authtoken ${{ secrets.NGR_AUTH_TOKEN }}
           ./ngrok http 80
